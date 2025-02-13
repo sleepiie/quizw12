@@ -4,5 +4,11 @@
     </head>
     <body>
         <h1>My Poll</h1>
+        {% if latest_question_list %}
+            <ul>
+                {% for question in latest_question_list %}
+                    <h2>{{ question.question_text }}</h2>
+                {% endfor %}
+            </ul>
     </body>
 </html>
