@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render, redirect
 from mypoll.models import Question , Choice
 from django.utils import timezone
 
@@ -8,3 +8,21 @@ def home_page(request):
     
 
     return render(request, "home.html" , {'latest_question_list':latest_question_list})
+
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        return render(request, 'home.html', {
+            'latest_question_list': [question],
+            'error_message': "คุณยังไม่ได้เลือกตัวเลือกใดๆ",
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        return redirect('mypoll:results', question_id=question.id)
+
+def results(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'results.html', {'question': question})
