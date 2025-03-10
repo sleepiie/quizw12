@@ -5,27 +5,25 @@ from django.utils import timezone
 def home_page(request): 
     latest_question_list = Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]
 
-    choice_vote = 0
-    ratings = []
+    question_rating = []
 
-    for i in range (1,len(latest_question_list)):
-        question = Question.objects.get(id=i)
-        for j in range (1,5):
-            choice = question.choice_set.get(pk=j)
-            choicevote=choice.votes
-            choice_vote += choicevote
-            if choice_vote >= 50:
-                rating = "hot"
-            elif choice_vote>=10 and choice_vote<=50:
-                rating = "warm"
-            else:
-                rating="normal"
-            ratings.append(rating)
-            
-         
-    print(ratings)
+    for question in latest_question_list:
+        total_votes = 0
+        choices = question.choice_set.all()
+        for choice in choices:
+            total_votes += choice.votes
 
-    return render(request, "home.html" , {'latest_question_list':latest_question_list , 'rating':rating})
+        if total_votes >= 50:
+            rating = "!!Hot"
+        elif total_votes >= 10:
+            rating = "!Warm"
+        else:
+            rating = ""
+                
+        question.rating = rating
+        question_rating.append(question)
+
+    return render(request, "home.html" , {'latest_question_list':question_rating})
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
