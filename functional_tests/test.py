@@ -70,3 +70,31 @@ class usertest(LiveServerTestCase):
         self.assertIn("วันนี้อากาศเป็นยังไงบ้าง", header.text)
 
         time.sleep(1)
+
+    def test_question_rating(self):
+        self.question1 = Question.objects.create(
+            question_text="วันนี้อากาศเป็นยังไงบ้าง", 
+            pub_date=timezone.now()
+        )
+        Choice.objects.create(question=self.question1, choice_text="อากาศดี", votes=10)
+        Choice.objects.create(question=self.question1, choice_text="คิดว่าฝนจะตก", votes=2)
+        Choice.objects.create(question=self.question1, choice_text="อากาศร้อนเกินไป", votes=5)
+        Choice.objects.create(question=self.question1, choice_text="อากาศหนาว", votes=0)
+        
+        self.question2 = Question.objects.create(
+            question_text="เย็นนี้กินอะไรดี", 
+            pub_date=timezone.now()
+        )
+        Choice.objects.create(question=self.question2, choice_text="ผัดไท", votes=10)
+        Choice.objects.create(question=self.question2, choice_text="แกงเขียวหวาน", votes=20)
+        Choice.objects.create(question=self.question2, choice_text="หมูกรอบ", votes=30)
+        Choice.objects.create(question=self.question2, choice_text="ไข่เจียว", votes=5)
+
+        self.browser.get(self.live_server_url)
+        self.assertIn("mypoll" , self.browser.title)
+
+        question1 = self.browser.find_element(By.ID, f"question{self.question1.id}")   
+        self.assertIn("วันนี้อากาศเป็นยังไงบ้าง - !Warm", question1.text)
+
+        question2 = self.browser.find_element(By.ID, f"question{self.question2.id}")
+        self.assertIn("เย็นนี้กินอะไรดี - !!Hot", question2.text)
