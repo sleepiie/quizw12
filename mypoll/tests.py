@@ -40,3 +40,29 @@ class VoteViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "คุณยังไม่ได้เลือกตัวเลือกใดๆ")
+
+class RatingTest(TestCase):
+    def setUp(self):
+        
+        self.question1 = Question.objects.create(
+            question_text="วันนี้อากาศเป็นยังไงบ้าง", 
+            pub_date=timezone.now()
+        )
+        Choice.objects.create(question=self.question1, choice_text="อากาศดี", votes=10)
+        Choice.objects.create(question=self.question1, choice_text="คิดว่าฝนจะตก", votes=2)
+        Choice.objects.create(question=self.question1, choice_text="อากาศร้อนเกินไป", votes=5)
+        Choice.objects.create(question=self.question1, choice_text="อากาศหนาว", votes=0)
+        
+        self.question2 = Question.objects.create(
+            question_text="เย็นนี้กินอะไรดี", 
+            pub_date=timezone.now()
+        )
+        Choice.objects.create(question=self.question2, choice_text="ผัดไท", votes=10)
+        Choice.objects.create(question=self.question2, choice_text="แกงเขียวหวาน", votes=20)
+        Choice.objects.create(question=self.question2, choice_text="หมูกรอบ", votes=30)
+        Choice.objects.create(question=self.question2, choice_text="ไข่เจียว", votes=5)
+
+    def testrating(self):
+        response = self.client.get(reverse('mypoll:homepage'))
+        self.assertContains(response, '!!Hot')
+        self.assertContains(response, '!Warm')
