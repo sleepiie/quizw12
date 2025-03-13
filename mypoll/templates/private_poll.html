@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>mypoll</title>
+  </head>
+  <body>
+    <h1>Private polls</h1>
+    {% if latest_question_list %}
+      <ul>
+        {% for question in latest_question_list %}
+          <li>
+            <h2 id="question{{question.id}}">{{ question.question_text }} - {{question.rating}}</h2>
+            <form action="{% url 'mypoll:vote' question.id %}" method="post">
+              {% csrf_token %}
+              <fieldset>
+                {% if error_message %}
+                  <p><strong>{{ error_message }}</strong></p>
+                {% endif %}
+                {% for choice in question.choice_set.all %}
+                  <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+                  <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+                {% endfor %}
+              </fieldset>
+              <input id ="vote" type="submit" value="Vote">
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No polls are available.</p>
+    {% endif %}
+  </body>
+</html>
