@@ -172,7 +172,7 @@ class usertest(LiveServerTestCase):
 
         self.assertIn("mypoll" , self.browser.title)
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text 
-        self.assertIn("Only you polls", header_text)
+        self.assertIn("Only you poll", header_text)
 
 
         question2 = self.browser.find_element(By.ID, f"question{self.question2.id}")   
