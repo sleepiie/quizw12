@@ -66,3 +66,20 @@ class RatingTest(TestCase):
         response = self.client.get(reverse('mypoll:homepage'))
         self.assertContains(response, '!!Hot')
         self.assertContains(response, '!Warm')
+
+class PrivatePollTest(TestCase):
+    def setUp(self):
+        self.question1 = Question.objects.create(
+            question_text="ใช้การ์ดจอค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question1, choice_text="Nvidia", votes=30)
+        Choice.objects.create(question=self.question1, choice_text="Amd", votes=20)
+        Choice.objects.create(question=self.question1, choice_text="Intel", votes=10)
+    def test_private_page(self):
+        response = self.client.get(reverse('mypoll:private_poll'))
+        self.assertContains(response, 'ใช้การ์ดจอค่ายไหน - !!Hot')
+        self.assertContains(response, 'Nvidia')
+        self.assertContains(response, 'Amd')
+        self.assertContains(response, 'Intel')
