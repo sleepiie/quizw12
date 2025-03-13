@@ -83,3 +83,29 @@ class PrivatePollTest(TestCase):
         self.assertContains(response, 'Nvidia')
         self.assertContains(response, 'Amd')
         self.assertContains(response, 'Intel')
+
+class OnlyPollTest(TestCase):
+    def setUp(self):
+        self.question1 = Question.objects.create(
+            question_text="ใช้การ์ดจอค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question1, choice_text="Nvidia", votes=30)
+        Choice.objects.create(question=self.question1, choice_text="Amd", votes=20)
+        Choice.objects.create(question=self.question1, choice_text="Intel", votes=10)
+
+        self.question2 = Question.objects.create(
+            question_text="ใช้ cpu ค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question2, choice_text="Intel", votes=10)
+        Choice.objects.create(question=self.question2, choice_text="Amd", votes=0)
+
+    def test_only_you_poll_page(self):
+        response = self.client.get(reverse('mypoll:onlypoll' , args=[self.question2.id]))
+        self.assertContains(response, 'Only you poll')
+        self.assertContains(response, 'ใช้ cpu ค่ายไหน')
+        self.assertContains(response, 'Amd')
+        self.assertContains(response, 'Intel')
