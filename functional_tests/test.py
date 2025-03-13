@@ -98,3 +98,52 @@ class usertest(LiveServerTestCase):
 
         question2 = self.browser.find_element(By.ID, f"question{self.question2.id}")
         self.assertIn("เย็นนี้กินอะไรดี - !!Hot", question2.text)
+    
+    def test_private_poll(self):
+        
+        self.question1 = Question.objects.create(
+            question_text="ใช้การ์ดจอค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question1, choice_text="Nvidia", votes=30)
+        Choice.objects.create(question=self.question1, choice_text="Amd", votes=20)
+        Choice.objects.create(question=self.question1, choice_text="Intel", votes=10)
+
+        self.browser.get(f"{self.live_server_url}/private/")
+
+
+        self.assertIn("mypoll" , self.browser.title)
+        header_text = self.browser.find_element(By.TAG_NAME, "h1").text 
+        self.assertIn("Private polls", header_text)
+
+
+        question1 = self.browser.find_element(By.ID, f"question{self.question1.id}")   
+        self.assertIn("ใช้การ์ดจอค่ายไหน - !!Hot", question1.text)
+
+
+        expected_choices = ["Nvidia", "Amd", "Intel"]
+        labels = self.browser.find_elements(By.TAG_NAME, "label")
+        found_choices = [label.text for label in labels]
+        for choice_text in expected_choices:
+            self.assertIn(choice_text, found_choices)
+        time.sleep(1)
+
+        choice_radio = self.browser.find_element(By.ID, "choice3")
+        choice_radio.click()
+        submit_button = self.browser.find_element(By.ID, "vote")
+        submit_button.click()
+        time.sleep(1)
+
+        result_header = self.browser.find_element(By.TAG_NAME, "h1")
+        self.assertEqual(result_header.text.strip(), "results")
+        choices = self.browser.find_elements(By.TAG_NAME, "li")
+        self.assertTrue(any("Intel" in li.text and "11" in li.text for li in choices))
+        time.sleep(1)
+
+        back_link = self.browser.find_element(By.LINK_TEXT, "กลับไปหน้าหลัก")
+        back_link.click()
+        time.sleep(1)
+       
+        header = self.browser.find_element(By.TAG_NAME, "h1")
+        self.assertIn("My Poll", header.text)
