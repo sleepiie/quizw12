@@ -66,3 +66,11 @@ def private_poll(request):
         question_rating.append(question)
 
     return render(request, "private_poll.html" , {'latest_question_list':question_rating})
+
+
+def onlypoll(request,question_id):
+    
+    question = get_object_or_404(Question, pk=question_id)
+    if question.is_private == False:
+        return redirect('/')
+    return render(request, 'onlypoll.html', {'question': question})
