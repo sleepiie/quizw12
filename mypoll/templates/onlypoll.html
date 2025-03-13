@@ -1,9 +1,9 @@
 <html>
   <head>
-    <title>result</title>
+    <title>mypoll</title>
   </head>
   <body>
-    <h1>Private polls</h1>
+    <h1>Only you polls</h1>
     <h2 id="question{{question.id}}">{{ question.question_text }}</h2>
     <form action="{% url 'mypoll:vote' question.id %}" method="post">
         {% csrf_token %}

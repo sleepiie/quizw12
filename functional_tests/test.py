@@ -147,3 +147,60 @@ class usertest(LiveServerTestCase):
        
         header = self.browser.find_element(By.TAG_NAME, "h1")
         self.assertIn("My Poll", header.text)
+
+    def test_onlypoll_page(self):
+    
+        self.question1 = Question.objects.create(
+            question_text="ใช้การ์ดจอค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question1, choice_text="Nvidia", votes=30)
+        Choice.objects.create(question=self.question1, choice_text="Amd", votes=20)
+        Choice.objects.create(question=self.question1, choice_text="Intel", votes=10)
+
+        self.question2 = Question.objects.create(
+            question_text="ใช้ cpu ค่ายไหน", 
+            pub_date=timezone.now(),
+            is_private = True
+        )
+        Choice.objects.create(question=self.question2, choice_text="Intel", votes=10)
+        Choice.objects.create(question=self.question2, choice_text="Amd", votes=0)
+
+        self.browser.get(f"{self.live_server_url}/private/{self.question2.id}")
+
+
+        self.assertIn("mypoll" , self.browser.title)
+        header_text = self.browser.find_element(By.TAG_NAME, "h1").text 
+        self.assertIn("Only you polls", header_text)
+
+
+        question2 = self.browser.find_element(By.ID, f"question{self.question2.id}")   
+        self.assertIn("ใช้ cpu ค่ายไหน", question2.text)
+
+
+        expected_choices = ["Intel", "Amd"]
+        labels = self.browser.find_elements(By.TAG_NAME, "label")
+        found_choices = [label.text for label in labels]
+        for choice_text in expected_choices:
+            self.assertIn(choice_text, found_choices)
+        time.sleep(1)
+
+        choice_radio = self.browser.find_element(By.ID, "choice2")
+        choice_radio.click()
+        submit_button = self.browser.find_element(By.ID, "vote")
+        submit_button.click()
+        time.sleep(1)
+
+        result_header = self.browser.find_element(By.TAG_NAME, "h1")
+        self.assertEqual(result_header.text.strip(), "results")
+        choices = self.browser.find_elements(By.TAG_NAME, "li")
+        self.assertTrue(any("Intel" in li.text and "1" in li.text for li in choices))
+        time.sleep(1)
+
+        back_link = self.browser.find_element(By.LINK_TEXT, "กลับไปหน้าหลัก")
+        back_link.click()
+        time.sleep(1)
+       
+        header = self.browser.find_element(By.TAG_NAME, "h1")
+        self.assertIn("My Poll", header.text)
